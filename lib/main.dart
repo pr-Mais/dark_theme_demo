@@ -1,69 +1,58 @@
-import 'package:dark_theme_demo/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+void main() => runApp(new MyApp());
+class ThemeChanger with ChangeNotifier {
+  var _themeMode = ThemeMode.light;
+  ThemeMode get themeMode => _themeMode;
+  void setTheme(themeMode) {
+    _themeMode = themeMode;
+    notifyListeners();
+  }
+}
+// This widget is the root of your application.
+class MyApp extends StatefulWidget {
+  const MyApp({Key key}) : super(key: key);
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<ThemeChanger>(
       create: (_) => ThemeChanger(),
-      child: CustomMaterialApp(),
+      child: Builder(
+        builder: (BuildContext context) {
+          final themeChanger = Provider.of<ThemeChanger>(context);
+          return MaterialApp(
+            title: 'Dark Theme Demo',
+            themeMode: themeChanger.themeMode,
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.orange,
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+            ),
+            home: MyHomePage(),
+          );
+        },
+      ),
     );
   }
 }
-
-class CustomMaterialApp extends StatelessWidget {
-  const CustomMaterialApp({
-    Key key,
-  }) : super(key: key);
-
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final themeChanger = Provider.of<ThemeChanger>(context);
-    return MaterialApp(
-      title: 'Dark Theme Demo',
-      themeMode: themeChanger.getTheme,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.orange,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-      ),
-      home: MyHomePage(title: 'Dark Theme Demo'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  String groupValue = 'light_mode';
-
-  @override
-  Widget build(BuildContext context) {
-    final themeChanger = Provider.of<ThemeChanger>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Dark Theme Demo'),
       ),
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(
-              top: 50.0,
-              bottom: 50,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 50.0),
             child: AnimatedCrossFade(
               crossFadeState: Theme.of(context).brightness == Brightness.light
                   ? CrossFadeState.showFirst
@@ -79,38 +68,23 @@ class _MyHomePageState extends State<MyHomePage> {
               duration: Duration(milliseconds: 200),
             ),
           ),
-          RadioListTile(
-            title: Text('Light Mode'),
-            groupValue: groupValue,
-            value: 'light_mode',
-            onChanged: (value) {
-              setState(() {
-                groupValue = value;
-              });
-              themeChanger.setTheme(ThemeMode.light);
-            },
+          RadioListTile<ThemeMode>(
+            title: const Text('Light Mode'),
+            groupValue: themeChanger.themeMode,
+            value: ThemeMode.light,
+            onChanged: themeChanger.setTheme,
           ),
-          RadioListTile(
-            title: Text('Dark Mode'),
-            groupValue: groupValue,
-            value: 'dark_mode',
-            onChanged: (value) {
-              setState(() {
-                groupValue = value;
-              });
-              themeChanger.setTheme(ThemeMode.dark);
-            },
+          RadioListTile<ThemeMode>(
+            title: const Text('Dark Mode'),
+            groupValue: themeChanger.themeMode,
+            value: ThemeMode.dark,
+            onChanged: themeChanger.setTheme,
           ),
-          RadioListTile(
-            title: Text('System Mode'),
-            groupValue: groupValue,
-            value: 'system_mode',
-            onChanged: (value) {
-              setState(() {
-                groupValue = value;
-              });
-              themeChanger.setTheme(ThemeMode.system);
-            },
+          RadioListTile<ThemeMode>(
+            title: const Text('System Mode'),
+            groupValue: themeChanger.themeMode,
+            value: ThemeMode.system,
+            onChanged: themeChanger.setTheme,
           ),
         ],
       ),
